@@ -1,33 +1,40 @@
 import streamlit as st
+import time
+
+# ------------------ Product modules ------------------
 from product.load_data import load_data
 from product.filters import apply_filters
 from product.product_grid import show_product_grid
 
-# Modular pages
-from contactus import show_contact
-from aboutas import show_about
-from price import show_price_calculator
+# If you have modular pages, import them
+from product.price import show_price_calculator
+from product.contactus import show_contact
+from product.aboutas import show_about
 
-import streamlit as st
-from streamlit_autorefresh import st_autorefresh
-
-# Auto-refresh every 5 minutes (300000 ms)
-st_autorefresh(interval=300_000, key="datarefresh")
-
-
-WHATSAPP_PHONE = "+9647501003839"  # your WhatsApp number
-
+# ------------------ Config ------------------
 st.set_page_config(page_title="Company Catalog", layout="wide")
+WHATSAPP_PHONE = "+9647501003839"  # your WhatsApp number
 st.sidebar.image("logo.png", use_column_width=True)
 
+# ------------------ Auto-refresh every 5 minutes ------------------
+REFRESH_INTERVAL = 300  # seconds
+if "last_refresh" not in st.session_state:
+    st.session_state.last_refresh = time.time()
+else:
+    if time.time() - st.session_state.last_refresh > REFRESH_INTERVAL:
+        st.session_state.last_refresh = time.time()
+        st.experimental_rerun()
+
+# ------------------ Sidebar Navigation ------------------
 page = st.sidebar.radio(
     "📌 Navigation",
     ("Products", "Price Calculating", "Contact Us", "About Us")
 )
 
-# ------------------ PAGES ------------------
+# ------------------ Pages ------------------
 if page == "Products":
     st.title("📦 Our Products")
+
     df = load_data()
     if df.empty or "URL" not in df.columns:
         st.error("No data found or 'URL' column missing in Google Sheet.")
