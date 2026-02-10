@@ -6,7 +6,7 @@ from product.product_grid import show_product_grid
 # ------------------ CONFIG ------------------
 st.set_page_config(page_title="Product Catalog", layout="wide")
 
-WHATSAPP_PHONE = "964XXXXXXXXX"  # ← put your real number
+WHATSAPP_PHONE = "964XXXXXXXXX"  # ← your real number
 
 # ------------------ STYLE ------------------
 st.markdown("""
@@ -54,8 +54,23 @@ if df.empty or "URL" not in df.columns:
 
 df = apply_filters(df)
 
+# ------------------ VIEW MODE ------------------
+view_mode = st.radio(
+    "🔳 Select view mode",
+    ("4 products square", "2 columns", "3 columns", "5 columns")
+)
+
+if view_mode == "4 products square":
+    columns_mode = 1
+elif view_mode == "2 columns":
+    columns_mode = 2
+elif view_mode == "3 columns":
+    columns_mode = 3
+else:
+    columns_mode = 4
+
 # ------------------ PRODUCT GRID ------------------
-show_product_grid(df, WHATSAPP_PHONE)
+show_product_grid(df, WHATSAPP_PHONE, columns_mode)
 
 # ------------------ FOOTER ------------------
 st.divider()
