@@ -12,7 +12,7 @@ def show_product_grid(df, phone, columns_mode=3):
     cols = st.columns(cols_count)
 
     # ------------------ CSS ------------------
-        st.markdown("""
+    st.markdown("""
     <style>
     .card {
         background: white;
