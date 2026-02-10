@@ -8,7 +8,7 @@ from contactus import show_contact
 from aboutas import show_about
 from price import show_price_calculator
 
-WHATSAPP_PHONE = "9657501003839"  # your WhatsApp number
+WHATSAPP_PHONE = "009657501003839"  # your WhatsApp number
 
 st.set_page_config(page_title="Company Catalog", layout="wide")
 st.sidebar.image("logo.png", use_column_width=True)
