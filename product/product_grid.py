@@ -2,7 +2,10 @@ import streamlit as st
 from product.whatsapp import build_whatsapp_link
 from product.badges import render_badge
 
-def show_product_grid(df, phone, columns_mode=3):
+product_url = row["URL"]
+message = f"السلام علیکم، دەمەوێت زیاتر بزانم لەسەر ئەم بەرهەمە: {product_url}"
+wa_link = f"https://wa.me/{phone}?text={st.experimental_singleton(lambda: message)()}"
+
     """
     Modern responsive product grid with badges and WhatsApp CTA.
     columns_mode: 2 → 2 cols, 3 → 3 cols, 4 → 5 cols
