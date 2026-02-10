@@ -80,7 +80,7 @@ def show_product_grid(df, phone, columns_mode=3):
             # WhatsApp CTA with product URL
             wa_link = build_whatsapp_link(phone, url)
             st.markdown(
-                f"<a class='whatsapp' href='{wa_link}' target='_blank'>📲 Request this product</a>",
+                f"<a class='whatsapp' href='{wa_link}' target='_blank'>بنێرە بۆ واتس ئەپ</a>",
                 unsafe_allow_html=True
             )
 
