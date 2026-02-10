@@ -3,11 +3,10 @@ from product.load_data import load_data
 from product.filters import apply_filters
 from product.product_grid import show_product_grid
 
-# ------------------ PAGE CONFIG ------------------
-st.set_page_config(
-    page_title="Product Catalog",
-    layout="wide"
-)
+# ------------------ CONFIG ------------------
+st.set_page_config(page_title="Product Catalog", layout="wide")
+
+WHATSAPP_PHONE = "964XXXXXXXXX"  # ← put your real number
 
 # ------------------ STYLE ------------------
 st.markdown("""
@@ -42,26 +41,22 @@ st.markdown("""
 st.markdown("""
 ## 📦 Premium Product Catalog  
 **Real photos & videos • Transparent prices • Updated live**
-
-🟢 Shared privately with our clients  
-📍 Serving Erbil & Kurdistan
 """)
 
 st.divider()
 
-# ------------------ LOAD DATA ------------------
+# ------------------ DATA ------------------
 df = load_data()
 
 if df.empty or "URL" not in df.columns:
-    st.error("No data found or 'URL' column missing in Google Sheet.")
+    st.error("No data found or 'URL' column missing.")
     st.stop()
 
-# ------------------ FILTERS ------------------
 df = apply_filters(df)
 
 # ------------------ PRODUCT GRID ------------------
-show_product_grid(df)
+show_product_grid(df, WHATSAPP_PHONE)
 
 # ------------------ FOOTER ------------------
 st.divider()
-st.caption("🟢 Catalog updates automatically • Powered by Google Sheets")
+st.caption("🟢 Auto-updated • Google Sheets backend")
