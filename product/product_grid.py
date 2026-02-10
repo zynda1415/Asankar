@@ -2,11 +2,32 @@ import streamlit as st
 from product.whatsapp import build_whatsapp_link
 from product.badges import render_badge
 
-def show_product_grid(df, phone):
-    cols = st.columns(3)
+def show_product_grid(df, phone, columns_mode=3):
+    """
+    df: DataFrame of products
+    phone: WhatsApp number
+    columns_mode: 1 → 4 products in square
+                  2 → 2 columns
+                  3 → 3 columns
+                  4 → 5 columns
+    """
+    # Determine columns
+    if columns_mode == 1:
+        # 4 products in a square: 2x2 grid
+        cols_count = 2
+    elif columns_mode == 2:
+        cols_count = 2
+    elif columns_mode == 3:
+        cols_count = 3
+    elif columns_mode == 4:
+        cols_count = 5
+    else:
+        cols_count = 3  # default
+
+    cols = st.columns(cols_count)
 
     for i, row in df.iterrows():
-        with cols[i % 3]:
+        with cols[i % cols_count]:
             st.markdown('<div class="card">', unsafe_allow_html=True)
 
             # Badge
