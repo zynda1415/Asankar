@@ -4,24 +4,20 @@ from product.badges import render_badge
 
 def show_product_grid(df, phone, columns_mode=3):
     """
-    Displays products in a flexible grid with 4 modes:
-    1 → 4 products square (2x2)
+    Displays products in a flexible grid with 3 modes:
     2 → 2 columns
     3 → 3 columns
-    4 → 5 columns
+    5 → 5 columns
     """
-    # ------------------ 4 products square mode ------------------
-    if columns_mode == 1:
-        df = df.head(4)  # only first 4 products
-        cols_count = 2    # 2x2 grid
-    elif columns_mode == 2:
+    # Determine number of columns
+    if columns_mode == 2:
         cols_count = 2
     elif columns_mode == 3:
         cols_count = 3
     elif columns_mode == 4:
         cols_count = 5
     else:
-        cols_count = 3  # default
+        cols_count = 3  # fallback default
 
     cols = st.columns(cols_count)
 
