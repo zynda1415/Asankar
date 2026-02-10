@@ -12,20 +12,6 @@ def show_product_grid(df, phone, columns_mode=3):
     cols = st.columns(cols_count)
 
     # ------------------ CSS ------------------
-    import streamlit as st
-from product.whatsapp import build_whatsapp_link
-from product.badges import render_badge
-
-def show_product_grid(df, phone, columns_mode=3):
-    """
-    Responsive product grid with badges and WhatsApp CTA.
-    columns_mode: 2 → 2 cols, 3 → 3 cols, 4 → 5 cols
-    """
-    # ------------------ Columns count ------------------
-    cols_count = {2:2, 3:3, 4:5}.get(columns_mode, 3)
-    cols = st.columns(cols_count)
-
-    # ------------------ CSS ------------------
     st.markdown("""
     <style>
     .card {
@@ -41,15 +27,19 @@ def show_product_grid(df, phone, columns_mode=3):
         color: #0d6efd;
     }
     .whatsapp {
-        background-color: #333333;   /* Dark grey background */
-        color: white;                 /* White text */
+        background-color: #333333 !important;   /* Dark grey */
+        color: white !important;                 /* Force white text */
         padding: 10px;
         border-radius: 10px;
         text-align: center;
-        text-decoration: none;
+        text-decoration: none !important;
         display: block;
         margin-top: 10px;
         font-weight: 600;
+    }
+    .whatsapp:hover {
+        background-color: #555555 !important;   /* Slightly lighter on hover */
+        color: white !important;
     }
     @media (max-width: 768px) {
         .stColumns {flex-wrap: wrap;}
