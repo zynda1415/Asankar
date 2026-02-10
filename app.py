@@ -7,9 +7,9 @@ from product.filters import apply_filters
 from product.product_grid import show_product_grid
 
 # If you have modular pages, import them
-from product.price import show_price_calculator
-from product.contactus import show_contact
-from product.aboutas import show_about
+from price import show_price_calculator
+from contactus import show_contact
+from aboutas import show_about
 
 # ------------------ Config ------------------
 st.set_page_config(page_title="Company Catalog", layout="wide")
