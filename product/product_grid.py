@@ -1,59 +1,76 @@
 import streamlit as st
-import time
+from product.whatsapp import build_whatsapp_link
+from product.badges import render_badge
 
-# ------------------ Modules ------------------
-from product.load_data import load_data
-from product.filters import apply_filters
-from product.product_grid import show_product_grid
-from product.price import show_price_calculator
-from product.contactus import show_contact
-from product.aboutas import show_about
+def show_product_grid(df, phone, columns_mode=3):
+    """
+    Responsive product grid with badges and WhatsApp CTA.
+    columns_mode: 2 → 2 cols, 3 → 3 cols, 4 → 5 cols
+    """
+    # ------------------ Columns count ------------------
+    cols_count = {2:2, 3:3, 4:5}.get(columns_mode, 3)
+    cols = st.columns(cols_count)
 
-# ------------------ Config ------------------
-st.set_page_config(page_title="Company Catalog", layout="wide")
-WHATSAPP_PHONE = "964XXXXXXXXX"  # your WhatsApp number
-st.sidebar.image("logo.png", use_column_width=True)
+    # ------------------ CSS ------------------
+    st.markdown("""
+    <style>
+    .card {
+        background: white;
+        border-radius: 16px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+    .price {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0d6efd;
+    }
+    .whatsapp {
+        background-color: #25D366;
+        color: white;
+        padding: 10px;
+        border-radius: 10px;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+        margin-top: 10px;
+        font-weight: 600;
+    }
+    @media (max-width: 768px) {
+        .stColumns {flex-wrap: wrap;}
+        .stColumn {width: 100% !important;}
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-# ------------------ Auto-refresh every 5 minutes ------------------
-REFRESH_INTERVAL = 300  # seconds
-if "last_refresh" not in st.session_state:
-    st.session_state.last_refresh = time.time()
-else:
-    if time.time() - st.session_state.last_refresh > REFRESH_INTERVAL:
-        st.session_state.last_refresh = time.time()
-        st.experimental_rerun()
+    # ------------------ Render products ------------------
+    for i, row in df.iterrows():
+        with cols[i % cols_count]:
+            st.markdown('<div class="card">', unsafe_allow_html=True)
 
-# ------------------ Sidebar Navigation ------------------
-page = st.sidebar.radio(
-    "📌 Navigation",
-    ("Products", "Price Calculating", "Contact Us", "About Us")
-)
+            # Badge
+            if "Badge" in df.columns and row.get("Badge"):
+                render_badge(row["Badge"])
 
-# ------------------ PAGES ------------------
-if page == "Products":
-    st.title("📦 Our Products")
+            # Media
+            url = row["URL"]
+            if any(url.lower().endswith(ext) for ext in ["jpg","jpeg","png","webp"]):
+                st.image(url, use_container_width=True)
+            else:
+                st.video(url)
 
-    df = load_data()
-    if df.empty or "URL" not in df.columns:
-        st.error("No data found or 'URL' column missing in Google Sheet.")
-        st.stop()
+            # Name / category / price
+            st.subheader(row.get("Name","Product"))
+            st.caption(row.get("Category",""))
+            if "Price" in df.columns and row.get("Price"):
+                st.markdown(f"<div class='price'>💰 {row['Price']}</div>", unsafe_allow_html=True)
 
-    df = apply_filters(df)
+            # WhatsApp CTA with product URL
+            wa_link = build_whatsapp_link(phone, url)
+            st.markdown(
+                f"<a class='whatsapp' href='{wa_link}' target='_blank'>📲 Request this product</a>",
+                unsafe_allow_html=True
+            )
 
-    view_mode = st.radio(
-        "🔳 Select view mode",
-        ("2 columns", "3 columns", "5 columns"),
-        horizontal=True
-    )
-    columns_mode = {"2 columns":2, "3 columns":3, "5 columns":4}[view_mode]
-
-    show_product_grid(df, WHATSAPP_PHONE, columns_mode)
-
-elif page == "Price Calculating":
-    show_price_calculator()
-
-elif page == "Contact Us":
-    show_contact(phone=WHATSAPP_PHONE, email="info@yourcompany.com")
-
-elif page == "About Us":
-    show_about()
+            st.markdown('</div>', unsafe_allow_html=True)
