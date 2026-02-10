@@ -65,7 +65,7 @@ client = gspread.authorize(credentials)
 
 @st.cache_data
 def load_data():
-    sheet_id = st.secrets["sheet"]["sheet_id"]
+    sheet_id = st.secrets["sheet_id"]
     sheet = client.open_by_key(sheet_id).sheet1
     return pd.DataFrame(sheet.get_all_records())
 
