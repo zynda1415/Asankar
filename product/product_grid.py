@@ -4,21 +4,14 @@ from product.badges import render_badge
 
 def show_product_grid(df, phone, columns_mode=3):
     """
-    Modern responsive product grid with badges and WhatsApp CTA.
-    
+    Responsive product grid with badges and WhatsApp CTA.
     columns_mode: 2 → 2 cols, 3 → 3 cols, 4 → 5 cols
     """
-    # ------------------ Columns count ------------------
-    if columns_mode == 2:
-        cols_count = 2
-    elif columns_mode == 3:
-        cols_count = 3
-    elif columns_mode == 4:
-        cols_count = 5
-    else:
-        cols_count = 3
+    # Columns count
+    cols_count = {2:2, 3:3, 4:5}.get(columns_mode, 3)
+    cols = st.columns(cols_count)
 
-    # ------------------ CSS ------------------
+    # CSS for cards
     st.markdown("""
     <style>
     .card {
@@ -51,9 +44,7 @@ def show_product_grid(df, phone, columns_mode=3):
     </style>
     """, unsafe_allow_html=True)
 
-    # ------------------ Columns ------------------
-    cols = st.columns(cols_count)
-
+    # Render products
     for i, row in df.iterrows():
         with cols[i % cols_count]:
             st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -64,24 +55,21 @@ def show_product_grid(df, phone, columns_mode=3):
 
             # Media
             url = row["URL"]
-            if any(url.lower().endswith(ext) for ext in ["jpg", "jpeg", "png", "webp"]):
+            if any(url.lower().endswith(ext) for ext in ["jpg","jpeg","png","webp"]):
                 st.image(url, use_container_width=True)
             else:
                 st.video(url)
 
             # Name / category / price
-            name = row.get("Name", "Product")
-            st.subheader(name)
-            st.caption(row.get("Category", ""))
-
+            st.subheader(row.get("Name","Product"))
+            st.caption(row.get("Category",""))
             if "Price" in df.columns and row.get("Price"):
                 st.markdown(f"<div class='price'>💰 {row['Price']}</div>", unsafe_allow_html=True)
 
             # WhatsApp CTA with product URL
             wa_link = build_whatsapp_link(phone, url)
             st.markdown(
-                f"<a class='whatsapp' href='{wa_link}' target='_blank'>بنێرە بۆ واتس ئەپ</a>",
+                f"<a class='whatsapp' href='{wa_link}' target='_blank'>📲 Request this product</a>",
                 unsafe_allow_html=True
             )
-
             st.markdown('</div>', unsafe_allow_html=True)
