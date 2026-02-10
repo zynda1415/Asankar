@@ -9,10 +9,9 @@ st.set_page_config(
     layout="wide"
 )
 
-# ------------------ STYLING ------------------
+# ------------------ STYLE ------------------
 st.markdown("""
 <style>
-body { background-color: #f8f9fa; }
 .card {
     background: white;
     border-radius: 16px;
@@ -39,10 +38,10 @@ body { background-color: #f8f9fa; }
 </style>
 """, unsafe_allow_html=True)
 
-# ------------------ HERO SECTION ------------------
+# ------------------ HERO ------------------
 st.markdown("""
 ## 📦 Premium Product Catalog  
-**Real photos & videos. Transparent prices. Updated live.**
+**Real photos & videos • Transparent prices • Updated live**
 
 🟢 Shared privately with our clients  
 📍 Serving Erbil & Kurdistan
@@ -50,45 +49,50 @@ st.markdown("""
 
 st.divider()
 
-# ------------------ GOOGLE SHEET AUTH ------------------
-scope = [
+# ------------------ GOOGLE AUTH ------------------
+SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets.readonly",
     "https://www.googleapis.com/auth/drive.readonly",
 ]
 
 credentials = Credentials.from_service_account_info(
     st.secrets["service_account"],
-    scopes=scope
+    scopes=SCOPES
 )
 
 client = gspread.authorize(credentials)
 
+# ------------------ LOAD DATA ------------------
 @st.cache_data
 def load_data():
-    sheet_id = st.secrets["sheet_id"]
+    sheet_id = st.secrets["sheet_id"]   # ✅ OPTION 2 FIX
     sheet = client.open_by_key(sheet_id).sheet1
-    return pd.DataFrame(sheet.get_all_records())
+    data = sheet.get_all_records()
+    return pd.DataFrame(data)
 
 df = load_data()
 
-if df.empty:
-    st.warning("No products available.")
+if df.empty or "URL" not in df.columns:
+    st.error("No data found or 'URL' column missing in Google Sheet.")
     st.stop()
 
 # ------------------ FILTERS ------------------
-col1, col2 = st.columns(2)
+c1, c2 = st.columns(2)
 
-with col1:
+with c1:
     search = st.text_input("🔍 Search product")
 
-with col2:
-    categories = ["All"] + sorted(df["Category"].dropna().unique().tolist())
-    selected_category = st.selectbox("📂 Category", categories)
+with c2:
+    if "Category" in df.columns:
+        categories = ["All"] + sorted(df["Category"].dropna().unique())
+        selected_category = st.selectbox("📂 Category", categories)
+    else:
+        selected_category = "All"
 
-if search:
+if search and "Name" in df.columns:
     df = df[df["Name"].str.contains(search, case=False, na=False)]
 
-if selected_category != "All":
+if selected_category != "All" and "Category" in df.columns:
     df = df[df["Category"] == selected_category]
 
 # ------------------ PRODUCT GRID ------------------
@@ -100,7 +104,7 @@ for i, row in df.iterrows():
 
         url = row["URL"]
 
-        # Media
+        # Media detect
         if any(url.lower().endswith(ext) for ext in ["jpg", "jpeg", "png", "webp"]):
             st.image(url, use_container_width=True)
         else:
@@ -110,11 +114,11 @@ for i, row in df.iterrows():
         st.subheader(row.get("Name", "Product"))
         st.caption(row.get("Category", ""))
 
-        if row.get("Price"):
+        if "Price" in df.columns and row.get("Price"):
             st.markdown(f'<div class="price">💰 {row["Price"]}</div>', unsafe_allow_html=True)
 
-        # WhatsApp button
-        message = f"Hello, I am interested in {row.get('Name','this product')}"
+        # WhatsApp CTA
+        message = f"Hello, I am interested in {row.get('Name', 'this product')}"
         wa_link = f"https://wa.me/964XXXXXXXXX?text={message.replace(' ', '%20')}"
 
         st.markdown(
@@ -126,4 +130,4 @@ for i, row in df.iterrows():
 
 # ------------------ FOOTER ------------------
 st.divider()
-st.caption("🟢 Catalog updated automatically • Powered by Google Sheets")
+st.caption("🟢 Catalog updates automatically • Powered by Google Sheets")
