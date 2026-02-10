@@ -1,5 +1,6 @@
 import streamlit as st
 from product.load_data import load_data
+from product.filters import apply_filters
 from product.product_grid import show_product_grid
 
 # ------------------ PAGE CONFIG ------------------
@@ -56,23 +57,7 @@ if df.empty or "URL" not in df.columns:
     st.stop()
 
 # ------------------ FILTERS ------------------
-c1, c2 = st.columns(2)
-
-with c1:
-    search = st.text_input("🔍 Search product")
-
-with c2:
-    if "Category" in df.columns:
-        categories = ["All"] + sorted(df["Category"].dropna().unique())
-        selected_category = st.selectbox("📂 Category", categories)
-    else:
-        selected_category = "All"
-
-if search and "Name" in df.columns:
-    df = df[df["Name"].str.contains(search, case=False, na=False)]
-
-if selected_category != "All" and "Category" in df.columns:
-    df = df[df["Category"] == selected_category]
+df = apply_filters(df)
 
 # ------------------ PRODUCT GRID ------------------
 show_product_grid(df)
