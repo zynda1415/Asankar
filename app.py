@@ -8,6 +8,13 @@ from contactus import show_contact
 from aboutas import show_about
 from price import show_price_calculator
 
+import streamlit as st
+from streamlit_autorefresh import st_autorefresh
+
+# Auto-refresh every 5 minutes (300000 ms)
+st_autorefresh(interval=300_000, key="datarefresh")
+
+
 WHATSAPP_PHONE = "+9647501003839"  # your WhatsApp number
 
 st.set_page_config(page_title="Company Catalog", layout="wide")
