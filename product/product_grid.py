@@ -9,15 +9,11 @@ def show_product_grid(df, phone, columns_mode=3):
     2 → 2 columns
     3 → 3 columns
     4 → 5 columns
-
-    Parameters:
-        df (DataFrame): Product data with 'URL', 'Name', 'Price', 'Badge'
-        phone (str): WhatsApp phone number
-        columns_mode (int): 1,2,3,4 → layout mode
     """
-    # Determine number of columns
+    # ------------------ 4 products square mode ------------------
     if columns_mode == 1:
-        cols_count = 2  # 2x2 grid
+        df = df.head(4)  # only first 4 products
+        cols_count = 2    # 2x2 grid
     elif columns_mode == 2:
         cols_count = 2
     elif columns_mode == 3:
@@ -25,7 +21,7 @@ def show_product_grid(df, phone, columns_mode=3):
     elif columns_mode == 4:
         cols_count = 5
     else:
-        cols_count = 3  # fallback default
+        cols_count = 3  # default
 
     cols = st.columns(cols_count)
 
@@ -33,13 +29,13 @@ def show_product_grid(df, phone, columns_mode=3):
         with cols[i % cols_count]:
             st.markdown('<div class="card">', unsafe_allow_html=True)
 
-            # Show badge if available
+            # Badge
             if "Badge" in df.columns and row.get("Badge"):
                 render_badge(row["Badge"])
 
             url = row["URL"]
 
-            # Detect media type
+            # Media detection
             if any(url.lower().endswith(ext) for ext in ["jpg", "jpeg", "png", "webp"]):
                 st.image(url, use_container_width=True)
             else:
