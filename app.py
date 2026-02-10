@@ -1,7 +1,6 @@
 import streamlit as st
-import pandas as pd
-import gspread
-from google.oauth2.service_account import Credentials
+from product.load_data import load_data
+from product.product_grid import show_product_grid
 
 # ------------------ PAGE CONFIG ------------------
 st.set_page_config(
@@ -49,27 +48,7 @@ st.markdown("""
 
 st.divider()
 
-# ------------------ GOOGLE AUTH ------------------
-SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets.readonly",
-    "https://www.googleapis.com/auth/drive.readonly",
-]
-
-credentials = Credentials.from_service_account_info(
-    st.secrets["service_account"],
-    scopes=SCOPES
-)
-
-client = gspread.authorize(credentials)
-
 # ------------------ LOAD DATA ------------------
-@st.cache_data
-def load_data():
-    # ✅ CORRECT PATH (matches your TOML)
-    sheet_id = st.secrets["service_account"]["sheet_id"]
-    sheet = client.open_by_key(sheet_id).sheet1
-    return pd.DataFrame(sheet.get_all_records())
-
 df = load_data()
 
 if df.empty or "URL" not in df.columns:
@@ -96,37 +75,7 @@ if selected_category != "All" and "Category" in df.columns:
     df = df[df["Category"] == selected_category]
 
 # ------------------ PRODUCT GRID ------------------
-cols = st.columns(3)
-
-for i, row in df.iterrows():
-    with cols[i % 3]:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-
-        url = row["URL"]
-
-        if any(url.lower().endswith(ext) for ext in ["jpg", "jpeg", "png", "webp"]):
-            st.image(url, use_container_width=True)
-        else:
-            st.video(url)
-
-        st.subheader(row.get("Name", "Product"))
-        st.caption(row.get("Category", ""))
-
-        if "Price" in df.columns and row.get("Price"):
-            st.markdown(
-                f'<div class="price">💰 {row["Price"]}</div>',
-                unsafe_allow_html=True
-            )
-
-        message = f"Hello, I am interested in {row.get('Name', 'this product')}"
-        wa_link = f"https://wa.me/964XXXXXXXXX?text={message.replace(' ', '%20')}"
-
-        st.markdown(
-            f'<a class="whatsapp" href="{wa_link}" target="_blank">📲 Request this product</a>',
-            unsafe_allow_html=True
-        )
-
-        st.markdown('</div>', unsafe_allow_html=True)
+show_product_grid(df)
 
 # ------------------ FOOTER ------------------
 st.divider()
