@@ -4,10 +4,8 @@ from product.badges import render_badge
 
 def show_product_grid(df, phone, columns_mode=3):
     """
-    Displays products in a flexible grid with 3 modes:
-    2 → 2 columns
-    3 → 3 columns
-    5 → 5 columns
+    Modern responsive product grid with badges and WhatsApp CTA.
+    columns_mode: 2 → 2 cols, 3 → 3 cols, 4 → 5 cols
     """
     # Determine number of columns
     if columns_mode == 2:
@@ -17,7 +15,40 @@ def show_product_grid(df, phone, columns_mode=3):
     elif columns_mode == 4:
         cols_count = 5
     else:
-        cols_count = 3  # fallback default
+        cols_count = 3
+
+    # Custom CSS for cards
+    st.markdown("""
+    <style>
+    .card {
+        background: white;
+        border-radius: 16px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+    .price {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0d6efd;
+    }
+    .whatsapp {
+        background-color: #25D366;
+        color: white;
+        padding: 10px;
+        border-radius: 10px;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+        margin-top: 10px;
+        font-weight: 600;
+    }
+    @media (max-width: 768px) {
+        .stColumns {flex-wrap: wrap;}
+        .stColumn {width: 100% !important;}
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
     cols = st.columns(cols_count)
 
@@ -30,8 +61,6 @@ def show_product_grid(df, phone, columns_mode=3):
                 render_badge(row["Badge"])
 
             url = row["URL"]
-
-            # Media detection
             if any(url.lower().endswith(ext) for ext in ["jpg", "jpeg", "png", "webp"]):
                 st.image(url, use_container_width=True)
             else:
@@ -42,16 +71,9 @@ def show_product_grid(df, phone, columns_mode=3):
             st.caption(row.get("Category", ""))
 
             if "Price" in df.columns and row.get("Price"):
-                st.markdown(
-                    f"<div class='price'>💰 {row['Price']}</div>",
-                    unsafe_allow_html=True
-                )
+                st.markdown(f"<div class='price'>💰 {row['Price']}</div>", unsafe_allow_html=True)
 
-            # WhatsApp CTA
             wa_link = build_whatsapp_link(phone, name)
-            st.markdown(
-                f"<a class='whatsapp' href='{wa_link}' target='_blank'>📲 Request this product</a>",
-                unsafe_allow_html=True
-            )
+            st.markdown(f"<a class='whatsapp' href='{wa_link}' target='_blank'>📲 Request this product</a>", unsafe_allow_html=True)
 
             st.markdown('</div>', unsafe_allow_html=True)
