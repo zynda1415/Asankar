@@ -12,7 +12,7 @@ def show_product_grid(df, phone, columns_mode=3):
     cols = st.columns(cols_count)
 
     # ------------------ CSS ------------------
-    st.markdown("""
+        st.markdown("""
     <style>
     .card {
         background: white;
@@ -27,8 +27,8 @@ def show_product_grid(df, phone, columns_mode=3):
         color: #0d6efd;
     }
     .whatsapp {
-        background-color: #25D366;
-        color: white;
+        background-color: #333333;   /* Dark grey background */
+        color: white;                 /* White text */
         padding: 10px;
         border-radius: 10px;
         text-align: center;
@@ -43,6 +43,7 @@ def show_product_grid(df, phone, columns_mode=3):
     }
     </style>
     """, unsafe_allow_html=True)
+
 
     # ------------------ Render products ------------------
     for i, row in df.iterrows():
