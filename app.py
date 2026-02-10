@@ -65,10 +65,10 @@ client = gspread.authorize(credentials)
 # ------------------ LOAD DATA ------------------
 @st.cache_data
 def load_data():
-    sheet_id = st.secrets["sheet_id"]   # ✅ OPTION 2 FIX
+    # ✅ CORRECT PATH (matches your TOML)
+    sheet_id = st.secrets["service_account"]["sheet_id"]
     sheet = client.open_by_key(sheet_id).sheet1
-    data = sheet.get_all_records()
-    return pd.DataFrame(data)
+    return pd.DataFrame(sheet.get_all_records())
 
 df = load_data()
 
@@ -104,20 +104,20 @@ for i, row in df.iterrows():
 
         url = row["URL"]
 
-        # Media detect
         if any(url.lower().endswith(ext) for ext in ["jpg", "jpeg", "png", "webp"]):
             st.image(url, use_container_width=True)
         else:
             st.video(url)
 
-        # Info
         st.subheader(row.get("Name", "Product"))
         st.caption(row.get("Category", ""))
 
         if "Price" in df.columns and row.get("Price"):
-            st.markdown(f'<div class="price">💰 {row["Price"]}</div>', unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="price">💰 {row["Price"]}</div>',
+                unsafe_allow_html=True
+            )
 
-        # WhatsApp CTA
         message = f"Hello, I am interested in {row.get('Name', 'this product')}"
         wa_link = f"https://wa.me/964XXXXXXXXX?text={message.replace(' ', '%20')}"
 
