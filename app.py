@@ -51,17 +51,21 @@ with st.sidebar:
 
 if page == "Products":
 
-    st.markdown("<h1 style='text-align:center;'>بەرهەمەکانمان</h1>", unsafe_allow_html=True)
+    col1, col2 = st.columns([4, 1])
 
-    # View mode selector
-    view_mode = st.selectbox(
-        "View Mode",
-        {
-            "2 Columns": 2,
-            "3 Columns": 3,
-            "5 Columns": 4
-        }
-    )
+    with col1:
+        st.markdown("<h2 style='margin-top:0;'>بەرهەمەکانمان</h2>", unsafe_allow_html=True)
+    
+    with col2:
+        view_mode = st.selectbox(
+            "",
+            {
+                "2": 2,
+                "3": 3,
+                "5": 4
+            }
+        )
+
 
     # Load Google Sheet data
     df = load_data()
