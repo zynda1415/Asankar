@@ -1,33 +1,26 @@
 import streamlit as st
-import time
 
 from product.load_data import load_data
 from product.product_grid import show_product_grid
 
-# If pages are outside product folder
+# Pages (outside product folder)
 from price import show_price_calculator
 from contactus import show_contact
 from aboutas import show_about
 
 
-# ------------------ CONFIG ------------------
+# ------------------ PAGE CONFIG ------------------
 st.set_page_config(
     page_title="Asankar Products",
     layout="wide"
 )
 
+# ------------------ AUTO REFRESH EVERY 30s ------------------
+st.autorefresh(interval=30000, key="sheet_refresh")
+
+
+# ------------------ WHATSAPP CONFIG ------------------
 WHATSAPP_PHONE = "9647501003839"  # بدون +
-
-
-# ------------------ AUTO REFRESH (5 min) ------------------
-REFRESH_INTERVAL = 10  # seconds
-
-if "last_refresh" not in st.session_state:
-    st.session_state.last_refresh = time.time()
-else:
-    if time.time() - st.session_state.last_refresh > REFRESH_INTERVAL:
-        st.session_state.last_refresh = time.time()
-        st.rerun()
 
 
 # ------------------ SIDEBAR ------------------
@@ -53,13 +46,12 @@ if page == "Products":
 
     st.markdown("<h2 style='margin-top:0;'>بەرهەمەکانمان</h2>", unsafe_allow_html=True)
 
-    # Load Google Sheet data
     df = load_data()
 
     if df.empty:
         st.warning("No products found.")
     else:
-        show_product_grid(df, WHATSAPP_PHONE, 3)
+        show_product_grid(df, WHATSAPP_PHONE, 3)  # Always 3 columns
 
 
 elif page == "Price Calculating":
