@@ -20,7 +20,7 @@ def show_product_grid(df, phone, columns_mode=3):
         border-radius: 16px;
         padding: 0px;  /* remove extra padding to avoid white space */
         margin-bottom: 20px;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        box-shadow: 0 6px 20px rgba(0,0,0,10.08);
     }
     .price {
         font-size: 16px;
