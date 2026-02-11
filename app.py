@@ -20,7 +20,7 @@ WHATSAPP_PHONE = "9647501003839"  # بدون +
 
 
 # ------------------ AUTO REFRESH (5 min) ------------------
-REFRESH_INTERVAL = 300  # seconds
+REFRESH_INTERVAL = 10  # seconds
 
 if "last_refresh" not in st.session_state:
     st.session_state.last_refresh = time.time()
