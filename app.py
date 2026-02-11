@@ -7,13 +7,13 @@ from product.filters import apply_filters
 from product.product_grid import show_product_grid
 
 # If you have modular pages, import them
-from price import show_price_calculator
-from contactus import show_contact
-from aboutas import show_about
+from product.price import show_price_calculator
+from product.contactus import show_contact
+from product.aboutas import show_about
 
 # ------------------ Config ------------------
 st.set_page_config(page_title="Company Catalog", layout="wide")
-WHATSAPP_PHONE = "+9647501003839"  # your WhatsApp number
+WHATSAPP_PHONE = "964XXXXXXXXX"  # your WhatsApp number
 st.sidebar.image("logo.png", use_column_width=True)
 
 # ------------------ Auto-refresh every 5 minutes ------------------
@@ -33,7 +33,7 @@ page = st.sidebar.radio(
 
 # ------------------ Pages ------------------
 if page == "Products":
-    st.title("📦 بەرهەمەکانمان")
+    st.title("بەرهەمەکانمان")
 
     df = load_data()
     if df.empty or "URL" not in df.columns:
