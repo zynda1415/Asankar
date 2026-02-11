@@ -68,9 +68,6 @@ def show_product_grid(df, phone, columns_mode=3):
             else:
                 st.video(url)
 
-            # Product Name
-            st.subheader(row.get("Name", "Product"))
-
             # Category (optional)
             if "Category" in df.columns and row.get("Category"):
                 st.caption(row["Category"])
