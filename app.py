@@ -33,7 +33,7 @@ page = st.sidebar.radio(
 
 # ------------------ Pages ------------------
 if page == "Products":
-    st.title("📦 Our Products")
+    st.title("📦 بەرهەمەکانمان")
 
     df = load_data()
     if df.empty or "URL" not in df.columns:
