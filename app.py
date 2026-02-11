@@ -53,10 +53,10 @@ if page == "Products":
 
     col1, col2 = st.columns([4, 1])
 
-    with col1:
+    with col2:
         st.markdown("<h2 style='margin-top:0;'>بەرهەمەکانمان</h2>", unsafe_allow_html=True)
     
-    with col2:
+    with col1:
         view_mode = st.selectbox(
             "",
             {
