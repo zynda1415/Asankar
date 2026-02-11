@@ -1,5 +1,3 @@
-import streamlit as st
-
 from product.load_data import load_data
 from product.product_grid import show_product_grid
 
