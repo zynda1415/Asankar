@@ -51,21 +51,7 @@ with st.sidebar:
 
 if page == "Products":
 
-    col1, col2 = st.columns([4, 1])
-
-    with col2:
-        st.markdown("<h2 style='margin-top:0;'>بەرهەمەکانمان</h2>", unsafe_allow_html=True)
-    
-    with col1:
-        view_mode = st.selectbox(
-            "",
-            {
-                "2": 2,
-                "3": 3,
-                "5": 4
-            }
-        )
-
+    st.markdown("<h2 style='margin-top:0;'>بەرهەمەکانمان</h2>", unsafe_allow_html=True)
 
     # Load Google Sheet data
     df = load_data()
@@ -73,7 +59,7 @@ if page == "Products":
     if df.empty:
         st.warning("No products found.")
     else:
-        show_product_grid(df, WHATSAPP_PHONE, view_mode)
+        show_product_grid(df, WHATSAPP_PHONE, 3)
 
 
 elif page == "Price Calculating":
