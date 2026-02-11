@@ -16,7 +16,7 @@ st.set_page_config(
 # ----------------- AUTO REFRESH EVERY 30s (HTML Meta Refresh) -----------------
 st.markdown(
     """
-    <meta http-equiv="refresh" content="30">
+    <meta http-equiv="refresh" content="3600">
     """,
     unsafe_allow_html=True
 )
