@@ -1,26 +1,30 @@
 import streamlit as st
-
-# ----------------- Modular Imports -----------------
 from product.load_data import load_data
 from product.product_grid import show_product_grid
 
+# Pages (outside product folder)
 from price import show_price_calculator
 from contactus import show_contact
 from aboutas import show_about
 
-# ----------------- Page Config -----------------
+# ----------------- PAGE CONFIG -----------------
 st.set_page_config(
     page_title="Asankar Products",
     layout="wide"
 )
 
-# ----------------- Auto Refresh Every 30s -----------------
-st.autorefresh(interval=30000, key="sheet_refresh")
+# ----------------- AUTO REFRESH EVERY 30s (HTML Meta Refresh) -----------------
+st.markdown(
+    """
+    <meta http-equiv="refresh" content="30">
+    """,
+    unsafe_allow_html=True
+)
 
-# ----------------- WhatsApp Config -----------------
+# ----------------- WHATSAPP CONFIG -----------------
 WHATSAPP_PHONE = "9647501003839"  # no + sign
 
-# ----------------- Sidebar -----------------
+# ----------------- SIDEBAR -----------------
 with st.sidebar:
     st.image("logo.png", width=180)
     st.markdown("## Menu")
@@ -34,11 +38,11 @@ with st.sidebar:
         ]
     )
 
-# ----------------- Page Routing -----------------
+# ----------------- PAGE ROUTING -----------------
 if page == "Products":
     st.markdown("<h2 style='margin-top:0;'>بەرهەمەکانمان</h2>", unsafe_allow_html=True)
 
-    df = load_data()
+    df = load_data()  # cached, refreshes every 30s
 
     if df.empty:
         st.warning("No products found.")
