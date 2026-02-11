@@ -1,61 +1,84 @@
 import streamlit as st
 import time
 
-# ------------------ Product modules ------------------
 from product.load_data import load_data
-from product.filters import apply_filters
 from product.product_grid import show_product_grid
 
-# If you have modular pages, import them
-from product.price import show_price_calculator
-from product.contactus import show_contact
-from product.aboutas import show_about
+# If pages are outside product folder
+from price import show_price_calculator
+from contactus import show_contact
+from aboutas import show_about
 
-# ------------------ Config ------------------
-st.set_page_config(page_title="Company Catalog", layout="wide")
-WHATSAPP_PHONE = "964XXXXXXXXX"  # your WhatsApp number
-st.sidebar.image("logo.png", use_column_width=True)
 
-# ------------------ Auto-refresh every 5 minutes ------------------
+# ------------------ CONFIG ------------------
+st.set_page_config(
+    page_title="Asankar Products",
+    layout="wide"
+)
+
+WHATSAPP_PHONE = "9647501003839"  # بدون +
+
+
+# ------------------ AUTO REFRESH (5 min) ------------------
 REFRESH_INTERVAL = 300  # seconds
+
 if "last_refresh" not in st.session_state:
     st.session_state.last_refresh = time.time()
 else:
     if time.time() - st.session_state.last_refresh > REFRESH_INTERVAL:
         st.session_state.last_refresh = time.time()
-        st.experimental_rerun()
+        st.rerun()
 
-# ------------------ Sidebar Navigation ------------------
-page = st.sidebar.radio(
-    "📌 Navigation",
-    ("Products", "Price Calculating", "Contact Us", "About Us")
-)
 
-# ------------------ Pages ------------------
-if page == "Products":
-    st.title("بەرهەمەکانمان")
+# ------------------ SIDEBAR ------------------
+with st.sidebar:
+    st.image("logo.png", width=180)  # make sure logo.png exists
 
-    df = load_data()
-    if df.empty or "URL" not in df.columns:
-        st.error("No data found or 'URL' column missing in Google Sheet.")
-        st.stop()
+    st.markdown("## Menu")
 
-    df = apply_filters(df)
-
-    view_mode = st.radio(
-        "🔳 Select view mode",
-        ("2 columns", "3 columns", "5 columns"),
-        horizontal=True
+    page = st.radio(
+        "",
+        [
+            "Products",
+            "Price Calculating",
+            "Contact Us",
+            "About Us"
+        ]
     )
-    columns_mode = {"2 columns":2, "3 columns":3, "5 columns":4}[view_mode]
 
-    show_product_grid(df, WHATSAPP_PHONE, columns_mode)
+
+# ------------------ PAGE ROUTING ------------------
+
+if page == "Products":
+
+    st.markdown("<h1 style='text-align:center;'>بەرهەمەکانمان</h1>", unsafe_allow_html=True)
+
+    # View mode selector
+    view_mode = st.selectbox(
+        "View Mode",
+        {
+            "2 Columns": 2,
+            "3 Columns": 3,
+            "5 Columns": 4
+        }
+    )
+
+    # Load Google Sheet data
+    df = load_data()
+
+    if df.empty:
+        st.warning("No products found.")
+    else:
+        show_product_grid(df, WHATSAPP_PHONE, view_mode)
+
 
 elif page == "Price Calculating":
     show_price_calculator()
 
+
 elif page == "Contact Us":
-    show_contact(phone=WHATSAPP_PHONE, email="info@yourcompany.com")
+    show_contact(phone=WHATSAPP_PHONE)
+
 
 elif page == "About Us":
     show_about()
