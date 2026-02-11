@@ -1,4 +1,9 @@
-@st.cache_data(ttl=30)  # refresh every 30 seconds
+import streamlit as st
+import pandas as pd
+import gspread
+from google.oauth2.service_account import Credentials
+
+@st.cache_data(ttl=30)  # Auto refresh every 30 seconds
 def load_data():
     scope = [
         "https://www.googleapis.com/auth/spreadsheets",
