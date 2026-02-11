@@ -3,6 +3,14 @@ import streamlit as st
 from product.load_data import load_data
 from product.product_grid import show_product_grid
 
+from price import show_price_calculator
+from contactus import show_contact
+from aboutas import show_about
+import streamlit as st
+
+from product.load_data import load_data
+from product.product_grid import show_product_grid
+
 # Pages (outside product folder)
 from price import show_price_calculator
 from contactus import show_contact
