@@ -20,17 +20,17 @@ def show_price_calculator():
     with col1:
         if st.button("MDF"):
             st.session_state.material = "MDF"
-        st.image("main/images/materials/mdf.png", use_column_width=True)
+        st.image("images/materials/mdf.png", use_column_width=True)
 
     with col2:
         if st.button("Balloon Press"):
             st.session_state.material = "Balloon Press"
-        st.image("main/images/materials/balloon_press.png", use_column_width=True)
+        st.image("images/materials/balloon_press.png", use_column_width=True)
 
     with col3:
         if st.button("Glass"):
             st.session_state.material = "Glass"
-        st.image("main/images/materials/glass.png", use_column_width=True)
+        st.image("images/materials/glass.png", use_column_width=True)
 
     if "material" not in st.session_state:
         return
@@ -46,12 +46,12 @@ def show_price_calculator():
     with col1:
         if st.button("Kitchen"):
             st.session_state.product = "Kitchen"
-        st.image("main/images/products/kitchen.png", use_column_width=True)
+        st.image("images/products/kitchen.png", use_column_width=True)
 
     with col2:
         if st.button("Wardrobe"):
             st.session_state.product = "Wardrobe"
-        st.image("main/images/products/wardrobe.png", use_column_width=True)
+        st.image("images/products/wardrobe.png", use_column_width=True)
 
     if "product" not in st.session_state:
         return
@@ -69,22 +69,22 @@ def show_price_calculator():
         with col1:
             if st.button("One-Wall"):
                 st.session_state.layout = "One-Wall"
-            st.image("main/images/layouts/one_wall.png", use_column_width=True)
+            st.image("images/layouts/one_wall.png", use_column_width=True)
 
         with col2:
             if st.button("L-Shaped"):
                 st.session_state.layout = "L-Shaped"
-            st.image("main/images/layouts/l_shaped.png", use_column_width=True)
+            st.image("images/layouts/l_shaped.png", use_column_width=True)
 
         with col3:
             if st.button("U-Shaped"):
                 st.session_state.layout = "U-Shaped"
-            st.image("main/images/layouts/u_shaped.png", use_column_width=True)
+            st.image("images/layouts/u_shaped.png", use_column_width=True)
 
         with col4:
             if st.button("Galley"):
                 st.session_state.layout = "Galley"
-            st.image("main/images/layouts/galley.png", use_column_width=True)
+            st.image("images/layouts/galley.png", use_column_width=True)
 
         if "layout" in st.session_state:
             st.success(f"Selected Layout: {st.session_state.layout}")
