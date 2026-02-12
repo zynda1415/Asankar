@@ -1,6 +1,15 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+import io
 
 # Config
 MATERIAL_PRICES = {"MDF": 120, "Balloon Press": 160, "Glass": 170}
@@ -8,11 +17,115 @@ WASTE_FACTOR, DISHWASHER_AREA, FRIDGE_DEPTH, CABINET_DEPTH, OVEN_HEIGHT, VITRINE
 
 # Translations
 T = {
-    "en": {"company": "Asankar Company", "calc": "Price Calculator", "sub": "Configure your dream kitchen or wardrobe", "s1": "Step 1: Select Material", "s2": "Step 2: Select Product", "s3k": "Step 3: Kitchen Layout", "s3w": "Step 3: Wardrobe Config", "s4": "Step 4: Dimensions & Appliances", "kitchen": "Kitchen", "wardrobe": "Wardrobe", "1wall": "One-Wall", "lshape": "L-Shaped", "ushape": "U-Shaped", "galley": "Galley", "dims": "Wall Dimensions", "h": "Height (m)", "l": "Length (m)", "w": "Width (m)", "app": "Appliances", "fridge": "🧊 Refrigerator", "dish": "🍽️ Dishwasher", "cab": "🗄️ Cabinet", "stove": "🔥 Stove", "oven": "With oven", "vit": "🪟 Vitrine", "shelf": "📚 Shelves", "nshelf": "Number of shelves", "door": "🚪 Door type", "hinge": "Hinged", "slide": "Sliding", "mirror": "🪞 Mirror/Glass", "gh": "Glass height (m)", "gw": "Glass width (m)", "break": "Price Breakdown", "comp": "Component", "area": "Area (m²)", "mat": "Material", "perm2": "Price/m²", "matcost": "Material Cost", "glasscost": "Glass Cost", "slidecost": "Sliding System", "total": "TOTAL PRICE", "new": "🔄 New Calc", "down": "📄 Download", "share": "💬 WhatsApp", "sel": "Please select to continue", "basic": "Basic Dimensions", "feat": "Additional Features"},
-    "ku": {"company": "کۆمپانیای ئاسانکار", "calc": "حیسابکەری نرخ", "sub": "چێشتخانە یان جلخانە ڕێکبخە", "s1": "هەنگاو ١: ماددە هەڵبژێرە", "s2": "هەنگاو ٢: بەرهەم هەڵبژێرە", "s3k": "هەنگاو ٣: شێوەی چێشتخانە", "s3w": "هەنگاو ٣: ڕێکخستنی جلخانە", "s4": "هەنگاو ٤: پێوانە و ئامێر", "kitchen": "چێشتخانە", "wardrobe": "جلخانە", "1wall": "یەک-دیوار", "lshape": "L شێوەی", "ushape": "U شێوەی", "galley": "هاوتەریب", "dims": "پێوانەی دیوار", "h": "بەرزی (م)", "l": "درێژی (م)", "w": "پانی (م)", "app": "ئامێرەکان", "fridge": "🧊 سارکەرەوە", "dish": "🍽️ قاپشۆر", "cab": "🗄️ کابینێت", "stove": "🔥 هێڵان", "oven": "لەگەڵ تەنوور", "vit": "🪟 ڤیترین", "shelf": "📚 تەختە", "nshelf": "ژمارەی تەختە", "door": "🚪 دەرگا", "hinge": "پاشۆڵە", "slide": "خلیسکان", "mirror": "🪞 ئاوێنە", "gh": "بەرزی شووشە (م)", "gw": "پانی شووشە (م)", "break": "وردەکاری نرخ", "comp": "پێکهاتە", "area": "ڕووبەر (م²)", "mat": "ماددە", "perm2": "نرخ/م²", "matcost": "تێچووی ماددە", "glasscost": "تێچووی شووشە", "slidecost": "سیستەمی خلیسکان", "total": "کۆی گشتی", "new": "🔄 نوێ", "down": "📄 داگرتن", "share": "💬 واتساپ", "sel": "تکایە هەڵبژێرە", "basic": "پێوانە بنەڕەتی", "feat": "تایبەتمەندی زیادە"},
-    "ar": {"company": "شركة أسانكار", "calc": "حاسبة الأسعار", "sub": "قم بتكوين مطبخ أو خزانة", "s1": "الخطوة ١: اختر المادة", "s2": "الخطوة ٢: اختر المنتج", "s3k": "الخطوة ٣: تصميم المطبخ", "s3w": "الخطوة ٣: تكوين الخزانة", "s4": "الخطوة ٤: الأبعاد والأجهزة", "kitchen": "مطبخ", "wardrobe": "خزانة", "1wall": "جدار واحد", "lshape": "شكل L", "ushape": "شكل U", "galley": "متوازي", "dims": "أبعاد الجدار", "h": "الارتفاع (م)", "l": "الطول (م)", "w": "العرض (م)", "app": "الأجهزة", "fridge": "🧊 ثلاجة", "dish": "🍽️ غسالة صحون", "cab": "🗄️ خزانة", "stove": "🔥 موقد", "oven": "مع فرن", "vit": "🪟 فاترينا", "shelf": "📚 رفوف", "nshelf": "عدد الرفوف", "door": "🚪 الباب", "hinge": "مفصلي", "slide": "منزلق", "mirror": "🪞 مرآة", "gh": "ارتفاع الزجاج (م)", "gw": "عرض الزجاج (م)", "break": "تفاصيل السعر", "comp": "المكون", "area": "المساحة (م²)", "mat": "المادة", "perm2": "السعر/م²", "matcost": "تكلفة المواد", "glasscost": "تكلفة الزجاج", "slidecost": "نظام الانزلاق", "total": "السعر الإجمالي", "new": "🔄 جديد", "down": "📄 تحميل", "share": "💬 واتساب", "sel": "الرجاء الاختيار", "basic": "الأبعاد الأساسية", "feat": "ميزات إضافية"}
+    "en": {
+        "company": "Asankar Company", "company_ar": "کۆمپانیای ئاسانکار", 
+        "calc": "Price Calculator", "sub": "Configure your dream kitchen or wardrobe", 
+        "s1": "Step 1: Select Material", "s2": "Step 2: Select Product", 
+        "s3k": "Step 3: Kitchen Layout", "s3w": "Step 3: Wardrobe Config", 
+        "s4": "Step 4: Dimensions & Appliances", "kitchen": "Kitchen", "wardrobe": "Wardrobe", 
+        "1wall": "One-Wall", "lshape": "L-Shaped", "ushape": "U-Shaped", "galley": "Galley", 
+        "dims": "Wall Dimensions", "h": "Height (m)", "l": "Length (m)", "w": "Width (m)", 
+        "app": "Appliances", "fridge": "🧊 Refrigerator", "dish": "🍽️ Dishwasher", 
+        "cab": "🗄️ Cabinet", "stove": "🔥 Stove", "oven": "With oven", "vit": "🪟 Vitrine", 
+        "shelf": "📚 Shelves", "nshelf": "Number of shelves", "door": "🚪 Door type", 
+        "hinge": "Hinged", "slide": "Sliding", "mirror": "🪞 Mirror/Glass", 
+        "gh": "Glass height (m)", "gw": "Glass width (m)", "break": "Price Breakdown", 
+        "comp": "Component", "area": "Area (m²)", "mat": "Material", "perm2": "Price/m²", 
+        "matcost": "Material Cost", "glasscost": "Glass Cost", "slidecost": "Sliding System", 
+        "total": "TOTAL PRICE", "new": "🔄 New Calc", "down": "📄 Download", 
+        "share": "💬 WhatsApp", "sel": "Please select to continue", 
+        "basic": "Basic Dimensions", "feat": "Additional Features",
+        "quote": "PRICE QUOTATION", "quote_num": "Quote Number", "date": "Date",
+        "material": "Material", "product": "Product Type", "layout": "Layout",
+        "details": "PROJECT DETAILS", "desc": "Description", "spec": "Specification",
+        "yes": "Yes", "no": "No", "breakdown_title": "AREA CALCULATION BREAKDOWN",
+        "item": "Item", "notes": "Notes", "subtracted": "Subtracted", "added": "Added (10%)",
+        "calculated": "Calculated", "price_summary": "PRICE SUMMARY", 
+        "quantity": "Quantity", "rate": "Rate", "amount": "Amount",
+        "subtotal": "SUBTOTAL", "tax": "TAX (if applicable)", "terms": "TERMS & CONDITIONS",
+        "term1": "This quotation is valid for 30 days from the date of issue.",
+        "term2": "Prices include materials and installation labor.",
+        "term3": "A 50% deposit is required to commence work.",
+        "term4": "Final dimensions will be confirmed on-site before production.",
+        "term5": "Installation timeline: 2-4 weeks from deposit confirmation.",
+        "term6": "Warranty: 2 years on materials and workmanship.",
+        "thank": "Thank you for choosing Asankar Company",
+        "contact": "Contact: info@asankar.com | Phone: +964-xxx-xxxx"
+    },
+    "ku": {
+        "company": "کۆمپانیای ئاسانکار", "company_ar": "کۆمپانیای ئاسانکار",
+        "calc": "حیسابکەری نرخ", "sub": "چێشتخانە یان جلخانە ڕێکبخە", 
+        "s1": "هەنگاو ١: ماددە هەڵبژێرە", "s2": "هەنگاو ٢: بەرهەم هەڵبژێرە", 
+        "s3k": "هەنگاو ٣: شێوەی چێشتخانە", "s3w": "هەنگاو ٣: ڕێکخستنی جلخانە", 
+        "s4": "هەنگاو ٤: پێوانە و ئامێر", "kitchen": "چێشتخانە", "wardrobe": "جلخانە", 
+        "1wall": "یەک-دیوار", "lshape": "L شێوەی", "ushape": "U شێوەی", "galley": "هاوتەریب", 
+        "dims": "پێوانەی دیوار", "h": "بەرزی (م)", "l": "درێژی (م)", "w": "پانی (م)", 
+        "app": "ئامێرەکان", "fridge": "🧊 سارکەرەوە", "dish": "🍽️ قاپشۆر", 
+        "cab": "🗄️ کابینێت", "stove": "🔥 هێڵان", "oven": "لەگەڵ تەنوور", 
+        "vit": "🪟 ڤیترین", "shelf": "📚 تەختە", "nshelf": "ژمارەی تەختە", 
+        "door": "🚪 دەرگا", "hinge": "پاشۆڵە", "slide": "خلیسکان", "mirror": "🪞 ئاوێنە", 
+        "gh": "بەرزی شووشە (م)", "gw": "پانی شووشە (م)", "break": "وردەکاری نرخ", 
+        "comp": "پێکهاتە", "area": "ڕووبەر (م²)", "mat": "ماددە", "perm2": "نرخ/م²", 
+        "matcost": "تێچووی ماددە", "glasscost": "تێچووی شووشە", 
+        "slidecost": "سیستەمی خلیسکان", "total": "کۆی گشتی", "new": "🔄 نوێ", 
+        "down": "📄 داگرتن", "share": "💬 واتساپ", "sel": "تکایە هەڵبژێرە", 
+        "basic": "پێوانە بنەڕەتی", "feat": "تایبەتمەندی زیادە",
+        "quote": "پسوڵەی نرخ", "quote_num": "ژمارەی پسوڵە", "date": "بەروار",
+        "material": "ماددە", "product": "جۆری بەرهەم", "layout": "شێواز",
+        "details": "وردەکاریی پڕۆژە", "desc": "وەسف", "spec": "تایبەتمەندی",
+        "yes": "بەڵێ", "no": "نەخێر", "breakdown_title": "وردەکاریی حیسابکردنی ڕووبەر",
+        "item": "بابەت", "notes": "تێبینی", "subtracted": "لابراو", "added": "زیادکراو (١٠٪)",
+        "calculated": "حیسابکراو", "price_summary": "کورتەی نرخ",
+        "quantity": "بڕ", "rate": "ڕێژە", "amount": "بڕی پارە",
+        "subtotal": "کۆی لاوەکی", "tax": "باج (ئەگەر هەبێت)", "terms": "مەرج و ڕێسا",
+        "term1": "ئەم پسوڵەیە بەکارە بۆ ماوەی ٣٠ ڕۆژ لە بەرواری دەرچوون.",
+        "term2": "نرخەکان ماددە و دامەزراندن لەخۆدەگرن.",
+        "term3": "پێویستە ٥٠٪ پێشەکی بۆ دەستپێکردنی کار.",
+        "term4": "پێوانە کۆتاییەکان لەسەر شوێن پشتڕاست دەکرێنەوە.",
+        "term5": "کاتی دامەزراندن: ٢-٤ هەفتە لە دوای پشتڕاستکردنەوەی پێشەکی.",
+        "term6": "گەرەنتی: ٢ ساڵ بۆ ماددە و کارکردن.",
+        "thank": "سوپاس بۆ هەڵبژاردنی کۆمپانیای ئاسانکار",
+        "contact": "پەیوەندی: info@asankar.com | ژمارە: +964-xxx-xxxx"
+    },
+    "ar": {
+        "company": "شركة أسانكار", "company_ar": "کۆمپانیای ئاسانکار",
+        "calc": "حاسبة الأسعار", "sub": "قم بتكوين مطبخ أو خزانة", 
+        "s1": "الخطوة ١: اختر المادة", "s2": "الخطوة ٢: اختر المنتج", 
+        "s3k": "الخطوة ٣: تصميم المطبخ", "s3w": "الخطوة ٣: تكوين الخزانة", 
+        "s4": "الخطوة ٤: الأبعاد والأجهزة", "kitchen": "مطبخ", "wardrobe": "خزانة", 
+        "1wall": "جدار واحد", "lshape": "شكل L", "ushape": "شكل U", "galley": "متوازي", 
+        "dims": "أبعاد الجدار", "h": "الارتفاع (م)", "l": "الطول (م)", "w": "العرض (م)", 
+        "app": "الأجهزة", "fridge": "🧊 ثلاجة", "dish": "🍽️ غسالة صحون", 
+        "cab": "🗄️ خزانة", "stove": "🔥 موقد", "oven": "مع فرن", "vit": "🪟 فاترينا", 
+        "shelf": "📚 رفوف", "nshelf": "عدد الرفوف", "door": "🚪 الباب", 
+        "hinge": "مفصلي", "slide": "منزلق", "mirror": "🪞 مرآة", 
+        "gh": "ارتفاع الزجاج (م)", "gw": "عرض الزجاج (م)", "break": "تفاصيل السعر", 
+        "comp": "المكون", "area": "المساحة (م²)", "mat": "المادة", "perm2": "السعر/م²", 
+        "matcost": "تكلفة المواد", "glasscost": "تكلفة الزجاج", 
+        "slidecost": "نظام الانزلاق", "total": "السعر الإجمالي", "new": "🔄 جديد", 
+        "down": "📄 تحميل", "share": "💬 واتساب", "sel": "الرجاء الاختيار", 
+        "basic": "الأبعاد الأساسية", "feat": "ميزات إضافية",
+        "quote": "عرض السعر", "quote_num": "رقم العرض", "date": "التاريخ",
+        "material": "المادة", "product": "نوع المنتج", "layout": "التصميم",
+        "details": "تفاصيل المشروع", "desc": "الوصف", "spec": "المواصفات",
+        "yes": "نعم", "no": "لا", "breakdown_title": "تفصيل حساب المساحة",
+        "item": "البند", "notes": "ملاحظات", "subtracted": "مطروح", "added": "مضاف (١٠٪)",
+        "calculated": "محسوب", "price_summary": "ملخص السعر",
+        "quantity": "الكمية", "rate": "السعر", "amount": "المبلغ",
+        "subtotal": "المجموع الفرعي", "tax": "الضريبة (إن وجدت)", "terms": "الشروط والأحكام",
+        "term1": "هذا العرض صالح لمدة ٣٠ يومًا من تاريخ الإصدار.",
+        "term2": "تشمل الأسعار المواد والتركيب.",
+        "term3": "مطلوب دفعة مقدمة بنسبة ٥٠٪ لبدء العمل.",
+        "term4": "سيتم تأكيد الأبعاد النهائية في الموقع قبل الإنتاج.",
+        "term5": "الجدول الزمني للتركيب: ٢-٤ أسابيع من تأكيد الدفعة المقدمة.",
+        "term6": "الضمان: سنتان على المواد والتصنيع.",
+        "thank": "شكراً لاختياركم شركة أسانكار",
+        "contact": "الاتصال: info@asankar.com | الهاتف: +964-xxx-xxxx"
+    }
 }
-def t(k, l="en"): return T.get(l, T["en"]).get(k, k)
+
+def t(k, l="en"): 
+    return T.get(l, T["en"]).get(k, k)
 
 def css():
     st.markdown("""<style>
@@ -30,32 +143,236 @@ def css():
     #MainMenu, footer {visibility: hidden;}
     </style>""", unsafe_allow_html=True)
 
-def quote_txt(bd, cd, mat, prod, lay=None):
-    d, n = datetime.now().strftime("%B %d, %Y"), datetime.now().strftime("%Y%m%d%H%M%S")
-    txt = f"""╔═══════════════════════════════════════════╗
-║    کۆمپانیای ئاسانکار - ASANKAR COMPANY   ║
-║         PRICE QUOTATION - پسوڵەی نرخ        ║
-╚═══════════════════════════════════════════╝
-
-Quote: {n} | Date: {d}
-Material/ماددە: {mat} | Product/بەرهەم: {prod}"""
-    if lay: txt += f"\nLayout/شێواز: {lay}"
-    txt += "\n\n" + "="*50 + "\nDETAILS / وردەکاری\n" + "="*50 + "\n"
-    for k, v in cd.items():
-        if k not in ['glass_cost', 'sliding_cost', 'total_price']:
-            if isinstance(v, float): txt += f"{k}: {v:.2f}m\n"
-            elif isinstance(v, bool): txt += f"{k}: {'Yes/بەڵێ' if v else 'No/نەخێر'}\n"
-            else: txt += f"{k}: {v}\n"
-    txt += "\n" + "="*50 + "\nAREA / ڕووبەر\n" + "="*50 + "\n"
-    for i, v in bd.items():
-        if v != 0: txt += f"{i:.<35} {abs(v):>10.2f} m²\n"
-    ta, mr, mc = bd.get('Total Area', 0), MATERIAL_PRICES[mat], bd.get('Total Area', 0) * MATERIAL_PRICES[mat]
-    txt += "\n" + "="*50 + "\nPRICE / نرخ\n" + "="*50 + f"\n{mat} @ ${mr}/m²\nArea/ڕووبەر: {ta:.2f}m² | Cost/تێچوو: ${mc:,.2f}\n"
-    if cd.get('glass_cost', 0) > 0: txt += f"Glass/شووشە: ${cd['glass_cost']:,.2f}\n"
-    if cd.get('sliding_cost', 0) > 0: txt += f"Sliding/خلیسکان: ${cd['sliding_cost']:,.2f}\n"
-    tp = cd.get('total_price', mc)
-    txt += f"\nTOTAL/کۆی گشتی: ${tp:,.2f}\n" + "="*50 + "\n\nTERMS: Valid 30 days | 50% deposit | 2-4 weeks install | 2yr warranty\nContact: info@asankar.com"
-    return txt
+def generate_pdf(bd, cd, mat, prod, lay, lang):
+    """Generate professional multilingual PDF"""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch, 
+                           leftMargin=0.75*inch, rightMargin=0.75*inch)
+    story = []
+    styles = getSampleStyleSheet()
+    
+    # Determine text alignment based on language
+    text_align = TA_RIGHT if lang in ["ku", "ar"] else TA_LEFT
+    
+    # Custom Styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=22,
+        textColor=colors.HexColor('#10b981'),
+        spaceAfter=20,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    
+    subtitle_style = ParagraphStyle(
+        'CustomSubtitle',
+        parent=styles['Heading2'],
+        fontSize=16,
+        textColor=colors.HexColor('#1f2937'),
+        spaceAfter=15,
+        alignment=text_align,
+        fontName='Helvetica-Bold'
+    )
+    
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=10,
+        alignment=text_align,
+        fontName='Helvetica'
+    )
+    
+    # Header - Company Name (bilingual)
+    story.append(Paragraph(t('company_ar', lang), title_style))
+    story.append(Paragraph(t('company', lang), title_style))
+    story.append(Spacer(1, 0.1*inch))
+    story.append(Paragraph(t('quote', lang), subtitle_style))
+    story.append(Spacer(1, 0.3*inch))
+    
+    # Quote Info Table
+    quote_date = datetime.now().strftime("%B %d, %Y")
+    quote_num = datetime.now().strftime("%Y%m%d%H%M%S")
+    
+    info_data = [
+        [t('quote_num', lang), quote_num, t('date', lang), quote_date],
+        [t('material', lang), mat, t('product', lang), prod]
+    ]
+    if lay:
+        info_data.append([t('layout', lang), lay, '', ''])
+    
+    info_table = Table(info_data, colWidths=[1.5*inch, 2*inch, 1.2*inch, 1.8*inch])
+    info_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f9fafb')),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#1f2937')),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e5e7eb')),
+        ('ROUNDEDCORNERS', [5, 5, 5, 5]),
+    ]))
+    story.append(info_table)
+    story.append(Spacer(1, 0.4*inch))
+    
+    # Project Details
+    story.append(Paragraph(t('details', lang), subtitle_style))
+    story.append(Spacer(1, 0.15*inch))
+    
+    details_data = [[t('desc', lang), t('spec', lang)]]
+    for key, value in cd.items():
+        if key not in ['glass_cost', 'sliding_cost', 'total_price']:
+            if isinstance(value, float):
+                details_data.append([key, f"{value:.2f} m"])
+            elif isinstance(value, bool):
+                details_data.append([key, t('yes', lang) if value else t('no', lang)])
+            else:
+                details_data.append([key, str(value)])
+    
+    details_table = Table(details_data, colWidths=[3*inch, 3.5*inch])
+    details_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10b981')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e5e7eb')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#fafafa')]),
+    ]))
+    story.append(details_table)
+    story.append(Spacer(1, 0.4*inch))
+    
+    # Area Breakdown
+    story.append(Paragraph(t('breakdown_title', lang), subtitle_style))
+    story.append(Spacer(1, 0.15*inch))
+    
+    breakdown_data = [[t('item', lang), t('area', lang), t('notes', lang)]]
+    for item, value in bd.items():
+        if value != 0:
+            note = ""
+            if "deduction" in item.lower() or "(-)" in item:
+                note = t('subtracted', lang)
+            elif "waste" in item.lower():
+                note = t('added', lang)
+            elif "total" in item.lower() or "subtotal" in item.lower():
+                note = t('calculated', lang)
+            
+            breakdown_data.append([item, f"{abs(value):.2f}", note])
+    
+    breakdown_table = Table(breakdown_data, colWidths=[2.5*inch, 1.8*inch, 2.2*inch])
+    breakdown_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10b981')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('ALIGN', (2, 0), (2, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e5e7eb')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#fafafa')]),
+    ]))
+    
+    # Highlight total row
+    for i, row in enumerate(breakdown_data):
+        if 'Total Area' in row[0] or t('total', lang) in row[0]:
+            breakdown_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, i), (-1, i), colors.HexColor('#d1fae5')),
+                ('FONTNAME', (0, i), (-1, i), 'Helvetica-Bold'),
+                ('TEXTCOLOR', (0, i), (-1, i), colors.HexColor('#065f46')),
+            ]))
+    
+    story.append(breakdown_table)
+    story.append(Spacer(1, 0.4*inch))
+    
+    # Price Summary
+    story.append(Paragraph(t('price_summary', lang), subtitle_style))
+    story.append(Spacer(1, 0.15*inch))
+    
+    total_area = bd.get('Total Area', 0)
+    material_rate = MATERIAL_PRICES[mat]
+    material_cost = total_area * material_rate
+    
+    price_data = [
+        [t('desc', lang), t('quantity', lang), t('rate', lang), t('amount', lang)],
+        [f'{mat} {t("material", lang)}', f'{total_area:.2f} m²', f'${material_rate}/m²', f'${material_cost:.2f}']
+    ]
+    
+    # Additional costs
+    if cd.get('glass_cost', 0) > 0:
+        price_data.append([t('glasscost', lang), '-', '-', f"${cd['glass_cost']:.2f}"])
+    
+    if cd.get('sliding_cost', 0) > 0:
+        price_data.append([t('slidecost', lang), '-', '-', f"${cd['sliding_cost']:.2f}"])
+    
+    total_price = cd.get('total_price', material_cost)
+    
+    price_data.append(['', '', t('subtotal', lang), f'${total_price:.2f}'])
+    price_data.append(['', '', t('tax', lang), '$0.00'])
+    price_data.append(['', '', t('total', lang).upper(), f'${total_price:.2f}'])
+    
+    price_table = Table(price_data, colWidths=[2.3*inch, 1.5*inch, 1.4*inch, 1.3*inch])
+    price_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10b981')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, 0), 'LEFT'),
+        ('ALIGN', (2, 0), (-1, -1), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('FONTNAME', (0, 1), (-1, -4), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -4), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -4), 0.5, colors.HexColor('#e5e7eb')),
+        ('LINEABOVE', (2, -3), (-1, -3), 1.5, colors.HexColor('#9ca3af')),
+        ('LINEABOVE', (2, -1), (-1, -1), 2, colors.HexColor('#10b981')),
+        ('BACKGROUND', (2, -1), (-1, -1), colors.HexColor('#d1fae5')),
+        ('FONTNAME', (2, -1), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (2, -1), (-1, -1), 12),
+        ('TEXTCOLOR', (2, -1), (-1, -1), colors.HexColor('#065f46')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -4), [colors.white, colors.HexColor('#fafafa')]),
+    ]))
+    story.append(price_table)
+    story.append(Spacer(1, 0.4*inch))
+    
+    # Terms & Conditions
+    story.append(Paragraph(t('terms', lang), subtitle_style))
+    story.append(Spacer(1, 0.1*inch))
+    
+    terms_text = f"""
+    1. {t('term1', lang)}<br/>
+    2. {t('term2', lang)}<br/>
+    3. {t('term3', lang)}<br/>
+    4. {t('term4', lang)}<br/>
+    5. {t('term5', lang)}<br/>
+    6. {t('term6', lang)}<br/>
+    """
+    story.append(Paragraph(terms_text, normal_style))
+    story.append(Spacer(1, 0.3*inch))
+    
+    # Footer
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.HexColor('#6b7280'),
+        alignment=TA_CENTER
+    )
+    story.append(Paragraph(t('thank', lang), footer_style))
+    story.append(Spacer(1, 0.05*inch))
+    story.append(Paragraph(t('contact', lang), footer_style))
+    
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
 
 def breakdown(bd, mp, gc=0, sc=0, tp=None, l="en"):
     st.markdown("---")
@@ -83,8 +400,22 @@ def breakdown(bd, mp, gc=0, sc=0, tp=None, l="en"):
             for k in list(st.session_state.keys()): del st.session_state[k]
             st.rerun()
     with c2:
-        qt = quote_txt(bd, st.session_state.calculation_details, st.session_state.material, st.session_state.product, st.session_state.layout if st.session_state.product == "Kitchen" else None)
-        st.download_button(t('down', l), qt, f"quote_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt", "text/plain", use_container_width=True)
+        # Generate PDF
+        pdf_buffer = generate_pdf(
+            bd, 
+            st.session_state.calculation_details, 
+            st.session_state.material, 
+            st.session_state.product,
+            st.session_state.layout if st.session_state.product == "Kitchen" else None,
+            l
+        )
+        st.download_button(
+            t('down', l), 
+            pdf_buffer, 
+            f"quote_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf", 
+            "application/pdf", 
+            use_container_width=True
+        )
     with c3:
         wa = f"Hi! Quote: {st.session_state.product} {st.session_state.material} - ${fp:,.2f}"
         st.markdown(f"[{t('share', l)}](https://wa.me/?text={wa.replace(' ', '%20')})", unsafe_allow_html=True)
