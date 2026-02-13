@@ -42,7 +42,7 @@ def css():
 
 def show_image_or_placeholder(path, text):
     if os.path.exists(path):
-        st.image(path, use_column_width=True)
+        st.image(path, use_container_width=True)
     else:
         st.markdown(f"<div class='img-placeholder'>📷 {text}<br/><small>{path}</small></div>", 
                    unsafe_allow_html=True)
@@ -255,7 +255,7 @@ def show_price_calculator():
     # Kitchen/Wardrobe Path
     if st.session_state.product in ["Kitchen", "Wardrobe"]:
         st.markdown("<div class='step-header'>📦 Step 2: Select Material</div>", unsafe_allow_html=True)
-        show_image_or_placeholder("images/materials/material.png", "Material Selection Image")
+        show_image_or_placeholder("images/materials/materials.png", "Material Selection Image")
         
         c1, c2, c3 = st.columns(3)
         with c1:
