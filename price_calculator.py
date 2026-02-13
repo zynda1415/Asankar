@@ -3,11 +3,12 @@ import pandas as pd
 from datetime import datetime
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image as RLImage
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 import io
+import os
 
 MATERIAL_PRICES = {"MDF": 120, "Balloon Press": 160, "Glass": 170}
 FRIDGE_DEPTH, CABINET_DEPTH, OVEN_HEIGHT, VITRINE_BASE_HEIGHT = 0.6, 0.6, 0.85, 0.6
@@ -27,7 +28,6 @@ def css():
         background: white; color: #1f2937; padding: 0.75rem 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);}
     .stButton>button:hover {transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
         border-color: #10b981; background: #f0fdf4;}
-    .stImage {border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
     .success-badge {background: #10b981; color: white; padding: 8px 20px; border-radius: 20px; 
         font-weight: 600; font-size: 15px; display: inline-block; margin: 12px 0;}
     .price-box {background: linear-gradient(135deg, #1f2937 0%, #374151 100%); color: white; 
@@ -35,8 +35,17 @@ def css():
         margin: 25px 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2);}
     .step-header {background: #f9fafb; color: #1f2937; padding: 15px 25px; border-radius: 10px; 
         border-left: 5px solid #10b981; margin: 25px 0 20px 0; font-size: 18px; font-weight: 600;}
+    .img-placeholder {background: #f3f4f6; border: 2px dashed #d1d5db; border-radius: 12px; 
+        padding: 60px 20px; text-align: center; color: #9ca3af; font-size: 14px; margin: 20px 0;}
     #MainMenu, footer {visibility: hidden;}
     </style>""", unsafe_allow_html=True)
+
+def show_image_or_placeholder(path, text):
+    if os.path.exists(path):
+        st.image(path, use_column_width=True)
+    else:
+        st.markdown(f"<div class='img-placeholder'>📷 {text}<br/><small>{path}</small></div>", 
+                   unsafe_allow_html=True)
 
 def gen_pdf(items):
     buffer = io.BytesIO()
@@ -50,12 +59,20 @@ def gen_pdf(items):
     subtitle_style = ParagraphStyle('Subtitle', parent=styles['Heading2'], fontSize=14, 
         textColor=colors.HexColor('#1f2937'), spaceAfter=15, alignment=TA_LEFT, fontName='Helvetica-Bold')
     
-    # Logo placeholder
+    # Logo
+    if os.path.exists("logo.png"):
+        try:
+            from reportlab.platypus import Image as RLImage
+            logo = RLImage("logo.png", width=1.5*inch, height=1.5*inch)
+            story.append(logo)
+            story.append(Spacer(1, 0.2*inch))
+        except:
+            pass
+    
     story.append(Paragraph("ASANKAR COMPANY", title_style))
     story.append(Paragraph("Price Quotation", subtitle_style))
     story.append(Spacer(1, 0.3*inch))
     
-    # Quote info
     quote_date = datetime.now().strftime("%B %d, %Y")
     quote_num = datetime.now().strftime("%Y%m%d%H%M%S")
     
@@ -71,7 +88,6 @@ def gen_pdf(items):
     story.append(info_table)
     story.append(Spacer(1, 0.4*inch))
     
-    # Items table
     story.append(Paragraph("Items", subtitle_style))
     table_data = [['Product', 'Details', 'Price']]
     total = 0
@@ -100,7 +116,6 @@ def gen_pdf(items):
     story.append(items_table)
     story.append(Spacer(1, 0.5*inch))
     
-    # Terms
     story.append(Paragraph("Terms & Conditions", subtitle_style))
     terms = """• Valid 30 days<br/>• Includes materials & installation<br/>• 50% deposit required<br/>
     • 2-4 weeks delivery<br/>• 2 year warranty<br/><br/>Contact: info@asankar.com | +964-xxx-xxxx"""
@@ -190,8 +205,12 @@ def show_price_calculator():
     css()
     
     # Logo
-    st.markdown("<h1 style='text-align: center; color: #10b981; margin: 20px 0;'>🏢 ASANKAR</h1>", 
-                unsafe_allow_html=True)
+    if os.path.exists("logo.png"):
+        st.image("logo.png", width=200)
+    else:
+        st.markdown("<h1 style='text-align: center; color: #10b981; margin: 20px 0;'>🏢 ASANKAR</h1>", 
+                    unsafe_allow_html=True)
+    
     st.markdown("<p style='text-align: center; color: #6b7280; margin-bottom: 40px;'>Price Calculator</p>", 
                 unsafe_allow_html=True)
     
@@ -208,7 +227,7 @@ def show_price_calculator():
     
     # Step 1: Product Selection
     st.markdown("<div class='step-header'>🛋️ Step 1: Select Product</div>", unsafe_allow_html=True)
-    st.image("images/products/products.png", use_column_width=True)
+    show_image_or_placeholder("images/products/products.png", "Product Selection Image")
     
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -236,7 +255,7 @@ def show_price_calculator():
     # Kitchen/Wardrobe Path
     if st.session_state.product in ["Kitchen", "Wardrobe"]:
         st.markdown("<div class='step-header'>📦 Step 2: Select Material</div>", unsafe_allow_html=True)
-        st.image("images/materials/material.png", use_column_width=True)
+        show_image_or_placeholder("images/materials/material.png", "Material Selection Image")
         
         c1, c2, c3 = st.columns(3)
         with c1:
@@ -283,7 +302,7 @@ def show_price_calculator():
     # Bed Path
     elif st.session_state.product == "Bed":
         st.markdown("<div class='step-header'>📐 Step 2: Select Size</div>", unsafe_allow_html=True)
-        st.image("images/products/bed_size.png", use_column_width=True)
+        show_image_or_placeholder("images/products/bed_size.png", "Bed Size Selection Image")
         
         c1, c2, c3 = st.columns(3)
         with c1:
@@ -304,7 +323,7 @@ def show_price_calculator():
                        unsafe_allow_html=True)
             
             st.markdown("<div class='step-header'>🛏️ Step 3: Select Type</div>", unsafe_allow_html=True)
-            st.image("images/materials/bed_types.png", use_column_width=True)
+            show_image_or_placeholder("images/materials/bed_types.png", "Bed Type Selection Image")
             
             c1, c2, c3 = st.columns(3)
             with c1:
