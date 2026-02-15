@@ -13,6 +13,6 @@ def load_data():
     )
 
     client = gspread.authorize(creds)
-    sheet = client.open("Your Sheet Name").sheet1
+    sheet = client.open("asankar_product_images").sheet1
     data = sheet.get_all_records()
     return pd.DataFrame(data)
