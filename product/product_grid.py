@@ -4,33 +4,49 @@ import urllib.parse
 def show_product_grid(df, whatsapp_phone, columns_mode=3):
 
     st.markdown("""
-        <style>
-        .product-name {
-            margin-bottom: 0.1px;
-            font-weight: 600;
-        }
+    <style>
+    .product-container {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+    }
 
-        .whatsapp-btn {
-            display: inline-block;
-            background-color: #2e2e2e;
-            color: white !important;
-            padding: 8px 16px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 700;
-            text-align: center;
-            width: 100%;
-            margin-top: 0px;
-        }
+    .product-image {
+        width: 100%;
+        display: block;
+    }
 
-        .whatsapp-btn:hover {
-            background-color: #1f1f1f;
-        }
+    .overlay-btn {
+        position: absolute;
+        bottom: 10px;   /* distance from bottom of image */
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #2e2e2e;
+        color: white !important;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+        opacity: 0.9;
+    }
 
-        div[data-testid="stVerticalBlock"] > div {
-            gap: 1rem;
-        }
-        </style>
+    .overlay-btn:hover {
+        background-color: #1f1f1f;
+        opacity: 1;
+    }
+
+    .product-name {
+        font-weight: 600;
+        text-align: center;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    div[data-testid="stVerticalBlock"] > div {
+        gap: 0.5rem;
+    }
+    </style>
     """, unsafe_allow_html=True)
 
     cols = st.columns(columns_mode)
@@ -41,28 +57,31 @@ def show_product_grid(df, whatsapp_phone, columns_mode=3):
         with col:
             url = row["URL"]
 
-            # YouTube
+            # Container for overlay
+            st.markdown('<div class="product-container">', unsafe_allow_html=True)
+
+            # Show product
             if "youtube.com" in url or "youtu.be" in url:
                 st.video(url)
-
-            # Direct video files
             elif any(url.lower().endswith(ext) for ext in [".mp4", ".mov", ".avi", ".webm", ".m4v"]):
                 st.video(url)
-
-            # Image
             else:
-                st.image(url, use_container_width=True)
+                st.image(url, use_container_width=True, output_format="auto")
 
-            st.markdown(
-                f'<div class="product-name">{row.get("Name","")}</div>',
-                unsafe_allow_html=True
-            )
-
+            # WhatsApp button overlay
             message = f"I am interested in this product: {row.get('Name','')}"
             encoded_message = urllib.parse.quote(message)
             link = f"https://wa.me/{whatsapp_phone}?text={encoded_message}"
 
             st.markdown(
-                f'<a href="{link}" target="_blank" class="whatsapp-btn">لەسەر بەرهەمەکە بپرسە</a>',
+                f'<a href="{link}" target="_blank" class="overlay-btn">لەسەر بەرهەمەکە بپرسە</a>',
+                unsafe_allow_html=True
+            )
+
+            st.markdown('</div>', unsafe_allow_html=True)
+
+            # Product name below image
+            st.markdown(
+                f'<div class="product-name">{row.get("Name","")}</div>',
                 unsafe_allow_html=True
             )
