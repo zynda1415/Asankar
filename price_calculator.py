@@ -1,4 +1,6 @@
 import streamlit as st
+from kitchen_wardrobe import show_kitchen_wardrobe
+from bed import show_bed
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
@@ -14,26 +16,13 @@ BED_PRICES = {
 }
 
 # ---------------- Initialize session_state ----------------
-if "cart" not in st.session_state:
-    st.session_state.cart = []
-
-if "step" not in st.session_state:
-    st.session_state.step = 0
-
-if "selected_product" not in st.session_state:
-    st.session_state.selected_product = None
-
-if "selected_material" not in st.session_state:
-    st.session_state.selected_material = None
-
-if "bed_size" not in st.session_state:
-    st.session_state.bed_size = None
-
-if "bed_type" not in st.session_state:
-    st.session_state.bed_type = None
+for key, default in [("cart", []), ("step", 0), ("selected_product", None),
+                     ("selected_material", None), ("bed_size", None), ("bed_type", None)]:
+    if key not in st.session_state:
+        st.session_state[key] = default
 
 # ---------------- Price Calculator ----------------
-def show_price_calculator(materials=MATERIAL_PRICES, bed_prices=BED_PRICES):
+def show_price_calculator():
     st.title("Price Calculator")
 
     # 1️⃣ Select Product Type
@@ -44,62 +33,11 @@ def show_price_calculator(materials=MATERIAL_PRICES, bed_prices=BED_PRICES):
     )
     st.image("images/products.png", use_container_width=True)
 
-    # ---------------- 2️⃣ Kitchen / Wardrobe Flow ----------------
+    # Delegate to specific script
     if product_type in ["Kitchen", "Wardrobe"]:
-        st.image("images/materials.png", use_container_width=True)
-
-        material = st.selectbox("Select Material", list(materials.keys()))
-        height = st.number_input("Height (m)", min_value=0.0, step=0.1)
-        length = st.number_input("Length (m)", min_value=0.0, step=0.1)
-
-        st.markdown("#### Appliances / Components (optional)")
-
-        # Compact appliance rows with icon + input
-        def appliance_input(icon, label, default=0.0):
-            col_icon, col_input = st.columns([1,4])
-            with col_icon:
-                st.image(f"images/{icon}.png", width=32)
-            with col_input:
-                value = st.number_input(label, min_value=0.0, step=1.0, value=default)
-            return value
-
-        fridge = appliance_input("fridge", "Fridge width (cm)")
-        dishwasher = appliance_input("dishwasher", "Dishwasher width (cm)")
-        stove = appliance_input("stove", "Stove width (cm)")
-        oven = st.checkbox("Oven included")  # checkbox separate
-        cabinet = appliance_input("cabinet", "Cabinet width (cm)")
-
-        if st.button("Add to Cart"):
-            total_area = height * length
-            deductions = (fridge + dishwasher + stove + cabinet)/100  # cm -> m
-            total_area -= deductions
-            price = round(total_area * materials[material], 2)
-
-            st.session_state.cart.append({
-                "Product": product_type,
-                "Material": material,
-                "Height": height,
-                "Length": length,
-                "Price": price
-            })
-            st.success(f"Added to cart: ${price}")
-
-    # ---------------- 3️⃣ Bed Flow ----------------
-    elif product_type == "Bed":
-        st.image("images/bed_size.png", use_container_width=True)
-        size = st.selectbox("Bed Size (cm)", ["90", "120", "180"])
-        st.image("images/bed_types.png", use_container_width=True)
-        bed_type = st.selectbox("Bed Type", list(bed_prices.keys()))
-
-        if st.button("Add Bed to Cart"):
-            price = bed_prices[bed_type][size]
-            st.session_state.cart.append({
-                "Product": "Bed",
-                "Type": bed_type,
-                "Size": size,
-                "Price": price
-            })
-            st.success(f"Added to cart: ${price}")
+        show_kitchen_wardrobe(materials=MATERIAL_PRICES)
+    else:
+        show_bed(bed_prices=BED_PRICES)
 
     # ---------------- 4️⃣ Cart System ----------------
     if st.session_state.cart:
