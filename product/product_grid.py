@@ -17,10 +17,10 @@ def show_product_grid(df, whatsapp_phone, columns_mode=3):
             padding: 8px 16px;
             border-radius: 8px;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 700;
             text-align: center;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 0px;
         }
 
         .whatsapp-btn:hover {
