@@ -1,10 +1,6 @@
 import streamlit as st
 import urllib.parse
 
-def is_video(url):
-    video_extensions = [".mp4", ".mov", ".avi", ".webm", ".m4v"]
-    return any(url.lower().endswith(ext) for ext in video_extensions)
-
 def show_product_grid(df, whatsapp_phone, columns_mode=3):
 
     st.markdown("""
@@ -34,9 +30,15 @@ def show_product_grid(df, whatsapp_phone, columns_mode=3):
         with col:
             url = row["URL"]
 
-            # Detect video or image
-            if is_video(url):
+            # --- Detect YouTube ---
+            if "youtube.com" in url or "youtu.be" in url:
                 st.video(url)
+
+            # --- Detect normal video files ---
+            elif any(url.lower().endswith(ext) for ext in [".mp4", ".mov", ".avi", ".webm", ".m4v"]):
+                st.video(url)
+
+            # --- Otherwise image ---
             else:
                 st.image(url, use_container_width=True)
 
