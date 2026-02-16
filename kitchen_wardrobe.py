@@ -21,7 +21,6 @@ def show_kitchen_wardrobe(materials):
     fridge = appliance_input("fridge", "Fridge width (cm)")
     dishwasher = appliance_input("dishwasher", "Dishwasher width (cm)")
     stove = appliance_input("stove", "Stove width (cm)")
-    oven = st.checkbox("Oven included")
     cabinet = appliance_input("cabinet", "Cabinet width (cm)")
 
     if st.button("Add to Cart"):
