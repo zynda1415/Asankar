@@ -18,8 +18,6 @@ def show_products_page(whatsapp_phone):
 
     active_filters = {}
 
-    st.markdown("### Filter")
-
     cols = st.columns(len(filter_columns))
 
     for i, col_name in enumerate(filter_columns):
