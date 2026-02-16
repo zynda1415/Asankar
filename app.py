@@ -1,7 +1,7 @@
 import streamlit as st
-from product_view_improved import show_products_page
-from price_calculator_improved import show_price_calculator
-from contactus_improved import show_contact
+from product_view import show_products_page
+from price_calculator import show_price_calculator
+from contactus import show_contact
 
 # Page config with better branding
 st.set_page_config(
