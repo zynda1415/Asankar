@@ -1,6 +1,6 @@
 import streamlit as st
 from product.load_data import load_data
-from product.product_grid_improved import show_product_grid
+from product.product_grid import show_product_grid
 
 def show_products_page(whatsapp_phone):
     # Hero section
