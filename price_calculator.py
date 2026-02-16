@@ -13,8 +13,24 @@ BED_PRICES = {
     "MDF": {"90": 200, "120": 230, "180": 300}
 }
 
+# ---------------- Initialize session_state ----------------
 if "cart" not in st.session_state:
     st.session_state.cart = []
+
+if "step" not in st.session_state:
+    st.session_state.step = 0
+
+if "selected_product" not in st.session_state:
+    st.session_state.selected_product = None
+
+if "selected_material" not in st.session_state:
+    st.session_state.selected_material = None
+
+if "bed_size" not in st.session_state:
+    st.session_state.bed_size = None
+
+if "bed_type" not in st.session_state:
+    st.session_state.bed_type = None
 
 # ---------------- Price Calculator ----------------
 def show_price_calculator(materials=MATERIAL_PRICES, bed_prices=BED_PRICES):
