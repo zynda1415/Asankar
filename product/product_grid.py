@@ -69,7 +69,9 @@ def show_product_grid(df, whatsapp_phone, columns_mode=3):
                 st.image(url, use_container_width=True, output_format="auto")
 
             # WhatsApp button overlay
-            message = f"I am interested in this product: {row.get('Name','')}"
+            product_url = row["URL"]
+            message = f"السلام علیکم، دەمەوێت زیاتر بزانم لەسەر ئەم بەرهەمە: {product_url}"
+
             encoded_message = urllib.parse.quote(message)
             link = f"https://wa.me/{whatsapp_phone}?text={encoded_message}"
 
