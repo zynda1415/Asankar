@@ -15,7 +15,7 @@ def show_product_grid(df, whatsapp_phone, columns_mode=3):
             background-color: #2e2e2e;
             color: white !important;
             padding: 8px 16px;
-            border-radius: 8px;
+            border-radius: 1px;
             text-decoration: none;
             font-weight: 700;
             text-align: center;
