@@ -1,9 +1,12 @@
 import streamlit as st
 import urllib.parse
 
+def is_video(url):
+    video_extensions = [".mp4", ".mov", ".avi", ".webm", ".m4v"]
+    return any(url.lower().endswith(ext) for ext in video_extensions)
+
 def show_product_grid(df, whatsapp_phone, columns_mode=3):
 
-    # Dark grey button style
     st.markdown("""
         <style>
         .whatsapp-btn {
@@ -29,12 +32,18 @@ def show_product_grid(df, whatsapp_phone, columns_mode=3):
         col = cols[i % columns_mode]
 
         with col:
-            st.image(row["URL"], use_container_width=True)
+            url = row["URL"]
+
+            # Detect video or image
+            if is_video(url):
+                st.video(url)
+            else:
+                st.image(url, use_container_width=True)
+
             st.markdown(f"**{row.get('Name','')}**")
 
             message = f"I am interested in this product: {row.get('Name','')}"
             encoded_message = urllib.parse.quote(message)
-
             link = f"https://wa.me/{whatsapp_phone}?text={encoded_message}"
 
             st.markdown(
