@@ -28,7 +28,7 @@ def show_product_grid(df, whatsapp_phone, columns_mode=3):
         }
 
         div[data-testid="stVerticalBlock"] > div {
-            gap: 0.4rem;
+            gap: 1 rem;
         }
         </style>
     """, unsafe_allow_html=True)
