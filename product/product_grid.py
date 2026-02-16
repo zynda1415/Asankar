@@ -21,7 +21,7 @@ def show_product_grid(df, whatsapp_phone, columns_mode=3):
         bottom: 10px;           /* distance from bottom of image */
         left: 50%;
         transform: translateX(-50%);
-        background-color: rgba(46,46,46,0.5); /* semi-transparent dark grey 50% */
+        background-color: rgba(46,46,46,0.5); /* semi-transparent dark grey 20% */
         color: white !important;
         padding: 8px 16px;
         border-radius: 10px;
