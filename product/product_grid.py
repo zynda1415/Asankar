@@ -6,7 +6,7 @@ def show_product_grid(df, whatsapp_phone, columns_mode=3):
     st.markdown("""
         <style>
         .product-name {
-            margin-bottom: 5px;
+            margin-bottom: 50px;
             font-weight: 600;
         }
 
