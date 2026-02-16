@@ -1,39 +1,75 @@
+# kitchen_wardrobe.py
 import streamlit as st
 
-def show_kitchen_wardrobe(materials):
+def show_kitchen_wardrobe(materials, product_type):
+    st.markdown(f"<h3>{product_type} Configuration</h3>", unsafe_allow_html=True)
+    
     st.image("images/materials.png", use_container_width=True)
 
-    material = st.selectbox("Select Material", list(materials.keys()))
-    height = st.number_input("Height (m)", min_value=0.0, step=0.1)
-    length = st.number_input("Length (m)", min_value=0.0, step=0.1)
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        material = st.selectbox("اختر المادة", list(materials.keys()))
+    
+    with col2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.info(f"السعر: ${materials[material]}/m²")
+    
+    st.markdown("#### القياسات")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        height = st.number_input("الارتفاع (m)", min_value=0.0, step=0.1, value=2.0)
+    with col2:
+        length = st.number_input("الطول (m)", min_value=0.0, step=0.1, value=3.0)
 
-    st.markdown("#### Appliances / Components (optional)")
+    st.markdown("#### الأجهزة / المكونات (اختياري)")
 
-    # Compact appliance rows with icon + input
     def appliance_input(icon, label, default=0.0):
-        col_icon, col_input = st.columns([1,4])
+        col_icon, col_input = st.columns([1, 4])
         with col_icon:
             st.image(f"images/{icon}.png", width=32)
         with col_input:
-            value = st.number_input(label, min_value=0.0, step=1.0, value=default)
+            value = st.number_input(label, min_value=0.0, step=10.0, value=default, key=f"{icon}_{product_type}")
         return value
 
-    fridge = appliance_input("fridge", "Fridge width (cm)")
-    dishwasher = appliance_input("dishwasher", "Dishwasher width (cm)")
-    stove = appliance_input("stove", "Stove width (cm)")
-    cabinet = appliance_input("cabinet", "Cabinet width (cm)")
+    fridge = appliance_input("fridge", "عرض الثلاجة (cm)")
+    dishwasher = appliance_input("dishwasher", "عرض غسالة الصحون (cm)")
+    stove = appliance_input("stove", "عرض الموقد (cm)")
+    cabinet = appliance_input("cabinet", "عرض الخزانة (cm)")
 
-    if st.button("Add to Cart"):
-        total_area = height * length
-        deductions = (fridge + dishwasher + stove + cabinet)/100  # cm -> m
-        total_area -= deductions
-        price = round(total_area * materials[material], 2)
+    # Live calculation preview
+    total_area = height * length
+    deductions = (fridge + dishwasher + stove + cabinet) / 100
+    net_area = max(0, total_area - deductions)
+    price = round(net_area * materials[material], 2)
+    
+    st.markdown("---")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric("المساحة الإجمالية", f"{round(total_area, 2)} m²")
+    with col2:
+        st.metric("الخصومات", f"{round(deductions, 2)} m²")
+    with col3:
+        st.metric("السعر المقدر", f"${price}")
 
-        st.session_state.cart.append({
-            "Product": st.session_state.selected_product or "Kitchen/Wardrobe",
-            "Material": material,
-            "Height": height,
-            "Length": length,
-            "Price": price
-        })
-        st.success(f"Added to cart: ${price}")
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col3:
+        if st.button("➕ إضافة إلى السلة", use_container_width=True, type="primary"):
+            if height > 0 and length > 0:
+                st.session_state.cart.append({
+                    "Product": product_type,
+                    "Material": material,
+                    "Height": f"{height}m",
+                    "Length": f"{length}m",
+                    "Area": f"{round(net_area, 2)}m²",
+                    "Price": price
+                })
+                st.success(f"✅ تمت الإضافة: ${price}")
+                st.rerun()
+            else:
+                st.error("يرجى إدخال قياسات صحيحة")
